@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sivan Spices — Ask Us Anything</title>
+<style>
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f5f0;
+    --bg-info: #e6f1fb;
+    --text-primary: #2c2c2a;
+    --text-secondary: #5f5e5a;
+    --text-info: #0c447c;
+    --border-tertiary: rgba(44,44,42,0.15);
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --accent: #0f6e56;
+    --accent-bg: #e1f5ee;
+    --warn: #9a5b13;
+    --warn-bg: #fbeede;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg-secondary);
+    margin: 0;
+    padding: 24px 12px;
+    color: var(--text-primary);
+  }
+  button {
+    font-family: inherit;
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+  button:hover { background: var(--bg-secondary); }
+  button:active { transform: scale(0.98); }
+  input[type="text"] {
+    font-family: inherit;
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    height: 36px;
+    font-size: 14px;
+  }
+  #app {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 85vh;
+    min-height: 600px;
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  a { color: var(--text-info); }
+  .bubble-user {
+    align-self: flex-end;
+    max-width: 85%;
+    background: var(--accent-bg);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+  }
+  .bubble-bot {
+    align-self: flex-start;
+    max-width: 90%;
+    background: var(--bg-secondary);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+  .badge-grounded { background: var(--accent-bg); color: var(--accent); }
+  .badge-ungrounded { background: var(--warn-bg); color: var(--warn); }
+  .badge-allergen { background: #fdeaea; color: #b3261e; margin-left: 6px; }
+  .source {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-left: 2px solid var(--border-tertiary);
+    padding-left: 8px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:0.5px solid var(--border-tertiary);background:var(--bg-secondary);">
+    <img src="/Frame 165@2x.png" alt="Sivan Spices" style="height:48px;width:auto;object-fit:contain;flex-shrink:0;" />
+    <div>
+      <p style="font-weight:700;font-size:15px;margin:0;">Sivan Spices — Ask Us Anything</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">Allergens, ingredients, shipping, and orders — answered from our official product info.</p>
+    </div>
+  </div>
+
+  <div id="thread" style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;"></div>
+
+  <div style="display:flex;gap:8px;padding:6px 18px 8px;flex-wrap:wrap;border-top:0.5px solid var(--border-tertiary);">
+    <button onclick="ask('What allergens should I know about across all your spice mixes?')" style="font-size:12px;padding:6px 10px;">Allergen Information for the spice mixes</button>
+    <button onclick="ask('Do you ship to Canada?')" style="font-size:12px;padding:6px 10px;">Do you ship to Canada?</button>
+    <button onclick="ask('What is your return policy?')" style="font-size:12px;padding:6px 10px;">Return policy</button>
+    <button onclick="ask('What ingredients are in the Garam Masala?')" style="font-size:12px;padding:6px 10px;">Garam Masala ingredients</button>
+  </div>
+
+  <form id="composer" style="display:flex;gap:8px;padding:12px 18px;border-top:0.5px solid var(--border-tertiary);">
+    <input id="input" type="text" placeholder="Ask about allergens, ingredients, shipping, orders..." style="flex:1;" autocomplete="off" />
+    <button type="submit" style="padding:0 16px;">Send</button>
+  </form>
+</div>
+
+<script>
+const thread = document.getElementById('thread');
+const form = document.getElementById('composer');
+const input = document.getElementById('input');
+
+function addUserBubble(text) {
+  const div = document.createElement('div');
+  div.className = 'bubble-user';
+  div.textContent = text;
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function addBotBubble(content) {
+  const div = document.createElement('div');
+  div.className = 'bubble-bot';
+  div.innerHTML = content;
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function ask(question) {
+  addUserBubble(question);
+  const loadingId = 'loading-' + Date.now();
+  addBotBubble('<span id="' + loadingId + '" style="color:var(--text-secondary);">Thinking…</span>');
+
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
+    const data = await res.json();
+    const loadingEl = document.getElementById(loadingId);
+
+    if (!res.ok) {
+      loadingEl.parentElement.innerHTML = escapeHtml(data.error || 'Something went wrong.');
+      return;
+    }
+
+    const groundedBadge = data.answer_supported_by_documents
+      ? '<span class="badge badge-grounded">✓ from our official docs</span>'
+      : '<span class="badge badge-ungrounded">⚠ not confirmed in our docs</span>';
+    const allergenBadge = data.allergen_related
+      ? '<span class="badge badge-allergen">allergen-related</span>'
+      : '';
+    const sourceHtml = data.source_excerpt
+      ? '<div class="source">"' + escapeHtml(data.source_excerpt) + '"</div>'
+      : '';
+
+    loadingEl.parentElement.innerHTML =
+      groundedBadge + allergenBadge +
+      '<div style="margin-top:6px;">' + escapeHtml(data.answer) + '</div>' +
+      sourceHtml;
+  } catch (err) {
+    const loadingEl = document.getElementById(loadingId);
+    loadingEl.parentElement.textContent = 'Network error — please try again.';
+  }
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  ask(q);
+});
+</script>
+</body>
+</html>
